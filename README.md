@@ -73,14 +73,34 @@ Requires Node 22 (see `.nvmrc`) and Docker for the database.
 ```bash
 npm install
 cp .env.example .env
+
 npm run db:up        # Postgres 16
 npm run db:migrate
+npm run db:seed      # demo rows, so the dashboard has something to show
+
 npm run typecheck
 npm test
 ```
 
-`npm test` runs without a database — the schema tests skip themselves — but CI
-always provides one, so the schema is never unverified on a pull request.
+`npm test` runs without a database — the schema and API tests skip themselves —
+but CI always provides one, so neither is ever unverified on a pull request.
+
+### Seeing the dashboard
+
+```bash
+npm run build        # build the dashboard once
+npm start            # http://localhost:3001 — API and dashboard on one port
+```
+
+For live reload while working on the UI, run `npm run dev:server` and `npm run
+dev` in two terminals; Vite serves the dashboard on 5173 and proxies `/api` to
+the server.
+
+The dashboard is week 11's deliverable, pulled forward so the shapes can be
+judged early. Until the pipeline exists, `npm run db:seed` writes demo rows in
+the shapes weeks 2–8 will produce, **and the page says on screen that it is
+looking at seed data.** Every number is a live SQL query; only the contents are
+staged.
 
 ## Layout
 
@@ -88,10 +108,14 @@ always provides one, so the schema is never unverified on a pull request.
 | --- | --- |
 | `db/migrations/` | The schema. Append-only; see `db/README.md`. |
 | `packages/db/` | Migration runner and schema tests. |
+| `packages/server/` | Express read API over Postgres, and the seed script. |
+| `packages/dashboard/` | The React dashboard. |
 | `packages/sample-app/` | The TypeScript consumer API Guardian repairs, plus the v1 spec. |
 | `BUILD_LOG.md` | What has been built, week by week, and why. |
 
 ## Where we are
 
 Week 1 of 12 is done: repo, Postgres, CI, and a sample TypeScript app with
-passing tests. `BUILD_LOG.md` has the detail and the decisions.
+passing tests — plus a working dashboard, pulled forward from week 11.
+39 tests pass across three workspaces. `BUILD_LOG.md` has the detail and the
+decisions.

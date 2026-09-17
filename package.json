@@ -11,10 +11,15 @@
     "packages/*"
   ],
   "scripts": {
+    "dev": "npm run dev --workspace @api-guardian/dashboard",
+    "dev:server": "npm run dev --workspace @api-guardian/server",
+    "build": "npm run build --workspace @api-guardian/dashboard",
+    "start": "npm run start --workspace @api-guardian/server",
     "typecheck": "npm run typecheck --workspaces --if-present",
     "test": "npm run test --workspaces --if-present",
     "db:migrate": "npm run migrate --workspace @api-guardian/db",
     "db:reset": "npm run reset --workspace @api-guardian/db",
+    "db:seed": "npm run seed --workspace @api-guardian/server",
     "db:up": "docker compose up -d postgres",
     "db:down": "docker compose down"
   },

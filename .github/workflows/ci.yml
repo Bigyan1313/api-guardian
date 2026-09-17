@@ -52,6 +52,9 @@ jobs:
       - name: Migrations are idempotent
         run: npm run db:migrate
 
+      - name: Build the dashboard
+        run: npm run build
+
       - name: Test
         run: npm test
 

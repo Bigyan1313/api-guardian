@@ -16,6 +16,7 @@ import { fileURLToPath } from 'node:url';
 import pg from 'pg';
 
 import { databaseUrl } from './config.ts';
+import type { Queryable } from './queryable.ts';
 
 const here = dirname(fileURLToPath(import.meta.url));
 export const MIGRATIONS_DIR = join(here, '..', '..', '..', 'db', 'migrations');
@@ -52,13 +53,13 @@ export async function loadMigrations(dir: string = MIGRATIONS_DIR): Promise<Migr
 }
 
 /** Drops and recreates the public schema. Only ever pointed at a dev or CI database. */
-export async function reset(client: pg.ClientBase): Promise<void> {
+export async function reset(client: Queryable): Promise<void> {
   await client.query('DROP SCHEMA IF EXISTS public CASCADE');
   await client.query('CREATE SCHEMA public');
 }
 
 export async function migrate(
-  client: pg.ClientBase,
+  client: Queryable,
   dir: string = MIGRATIONS_DIR,
 ): Promise<MigrateResult> {
   await client.query(CREATE_MIGRATIONS_TABLE);

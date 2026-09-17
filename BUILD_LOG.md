@@ -15,7 +15,7 @@ is the record of what actually happened against it.
 | 8 | PR writer | Not started |
 | 9 | Test set | Not started |
 | 10 | Evaluation | Not started |
-| 11 | Dashboard | Not started |
+| 11 | Dashboard | **Brought forward to week 1** |
 | 12 | Write-up and demo | Not started |
 
 ---
@@ -24,8 +24,9 @@ is the record of what actually happened against it.
 
 **Done means:** repo, Postgres, CI, one sample TypeScript app with passing tests.
 
-**Result:** all four, verified. 31 tests pass, typecheck is clean, and the
-migration was applied against a real PostgreSQL 16 rather than only written.
+**Result:** all four, plus a working dashboard pulled forward from week 11.
+39 tests pass across three workspaces, typecheck is clean, and the migration was
+applied against a real PostgreSQL 16 rather than only written.
 
 ### What landed
 
@@ -55,6 +56,13 @@ call and reads the API's fields directly, so a rename breaks more than the
 client file. The v1 OpenAPI spec is checked in at
 `packages/sample-app/openapi/contacts-v1.json` as the baseline week 3 diffs
 against.
+
+**The dashboard, early.** Week 11 in the plan, built in week 1 because a
+foundation nobody can look at is hard to trust and hard to steer. It is React +
+Vite over an Express read API (`packages/server`), which reads Postgres and
+nothing else. In development Vite proxies `/api` to the server; once built, the
+server serves the dashboard too, so the demo is one command on one port instead
+of two that have to agree.
 
 ### Decisions worth recording
 
@@ -86,6 +94,37 @@ The risk is a CI run that reports green while testing nothing, so the workflow
 ends by asserting the public schema really holds seven tables. A skipped test
 suite cannot masquerade as a passing one.
 
+**The dashboard admits it is looking at seed data.** Week 1 has a schema and no
+pipeline, so a dashboard reading the real database would correctly show nothing.
+`npm run db:seed` writes one worked example through every table — all five change
+types, a repair that succeeded on attempt 2, a cheat caught, a run that hit the
+four-attempt cap, and the case we refuse to patch. The page carries a banner
+saying these are seed rows and the pipeline arrives in weeks 3–7. A demo that
+does not admit it is a demo is how a project loses a reviewer's trust, and the
+banner disappears on its own once real rows replace the seeded ones.
+
+**The dashboard computes nothing.** Every number on screen is a SQL query in
+`packages/server/src/queries.ts`. "Flagged for a human" is not a count the UI
+derives from a list it happens to hold; it is `WHERE classification IN
+('breaking','unknown') AND mapping_confirmed_by IS NULL`. A test asserts the tile
+and the table agree, so a query that drifts from what the UI claims fails the
+build rather than misleading a reader.
+
+**Chart colour was computed, not eyeballed.** The bar chart is one series, so it
+is one hue for every bar — colouring bars darker-where-bigger would encode length
+twice. The palette ran through the data-viz validator (passes in both modes), and
+the status colours used for verdict badges were checked for WCAG text contrast
+instead, since they are reserved status tokens rather than a categorical set.
+Every badge is a dot **and** a word, so no verdict is carried by colour alone.
+One deviation is recorded in `styles.css`: the reference muted grey measures
+3.50:1 on the light surface, which is fine for axis chrome but not for the small
+table headers it is used for here, so light mode takes a darker neutral at
+5.11:1.
+
+**Express 5, not 4.** Express 4 pulls in `path-to-regexp` and `qs` versions with
+open DoS advisories. Express 5 clears them: `npm audit` reports zero across the
+whole workspace.
+
 **TypeScript 5.9, not 7.** TypeScript 7 is available. Week 4 depends on
 ts-morph and week 5 pins `tsc` inside the Docker validator, and neither should
 be chasing a compiler rewrite during a twelve-week build. Revisit as a stretch
@@ -107,6 +146,11 @@ out with known-vulnerable dependencies.
 | `npm run db:migrate` a second time | nothing applied; idempotent |
 | `@api-guardian/db` tests | 13 passed |
 | `@api-guardian/sample-app` tests | 18 passed |
+| `@api-guardian/server` tests | 8 passed |
+| Dashboard production build | clean, 229 kB / 72 kB gzipped |
+| Dashboard rendered in Chromium | light, dark and 420px wide; no horizontal overflow |
+| Data-viz palette validator | passes both modes for the chart hue |
+| Badge text contrast | AA in both modes |
 | CI's seven-table guard, run locally | passes |
 
 ### Known gaps
@@ -118,8 +162,13 @@ out with known-vulnerable dependencies.
   container path, and week 5's validator depends on Docker working, so that is
   the thing to check first, not last.
 - No linter yet. Typecheck covers the errors that matter most for now; ESLint
-  arrives with the backend in week 3, where its rules can be set against real
-  code rather than a scaffold.
+  arrives in week 3, where its rules can be set against real code rather than a
+  scaffold.
+- The dashboard has no tests of its own. The server queries behind it are
+  tested, and the page was checked by rendering it, but there is no component
+  test. Worth adding when the UI stops changing shape every week.
+- The dashboard polls nothing: it loads once. Live updates can wait until there
+  is a pipeline producing changes to watch.
 - `packages/sample-app/src/types.ts` mirrors the OpenAPI spec by hand. That is
   deliberate — it is how a real consumer drifts from its provider — but it means
   the types do not move when the spec does.
