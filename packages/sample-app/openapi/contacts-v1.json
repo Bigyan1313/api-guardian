@@ -1,0 +1,102 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Contacts API",
+    "version": "1.0.0",
+    "description": "The demo API the sample app consumes. Week 2 publishes v2 of this spec with the five in-scope breaking changes; this file is the baseline it is diffed against."
+  },
+  "servers": [{ "url": "https://contacts.example.test" }],
+  "paths": {
+    "/v1/contacts": {
+      "get": {
+        "operationId": "getV1Contacts",
+        "summary": "List contacts",
+        "responses": {
+          "200": {
+            "description": "Every contact, as a bare array.",
+            "content": {
+              "application/json": {
+                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Contact" } }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/contacts/{id}": {
+      "get": {
+        "operationId": "getV1ContactsById",
+        "summary": "Fetch one contact",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "The contact.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Contact" } }
+            }
+          },
+          "404": {
+            "description": "No contact with that id.",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+            }
+          }
+        }
+      }
+    },
+    "/v1/contacts/{id}/activity": {
+      "get": {
+        "operationId": "getV1ContactsByIdActivity",
+        "summary": "A contact's activity feed",
+        "parameters": [
+          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": {
+            "description": "Activity entries, newest last.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": { "$ref": "#/components/schemas/ActivityEntry" }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Contact": {
+        "type": "object",
+        "required": ["id", "customer_name", "email", "lifetime_value", "created_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "customer_name": { "type": "string" },
+          "email": { "type": "string", "format": "email" },
+          "lifetime_value": { "type": "number" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "ActivityEntry": {
+        "type": "object",
+        "required": ["id", "contact_id", "kind", "occurred_at"],
+        "properties": {
+          "id": { "type": "string" },
+          "contact_id": { "type": "string" },
+          "kind": { "type": "string", "enum": ["login", "purchase", "support_ticket"] },
+          "occurred_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": ["error"],
+        "properties": { "error": { "type": "string" } }
+      }
+    }
+  }
+}

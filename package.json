@@ -1,0 +1,27 @@
+{
+  "name": "api-guardian",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Self-maintaining API integrations: detect breaking OpenAPI changes, repair the consuming code, and open a PR for human review.",
+  "type": "module",
+  "engines": {
+    "node": ">=22"
+  },
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "typecheck": "npm run typecheck --workspaces --if-present",
+    "test": "npm run test --workspaces --if-present",
+    "db:migrate": "npm run migrate --workspace @api-guardian/db",
+    "db:reset": "npm run reset --workspace @api-guardian/db",
+    "db:up": "docker compose up -d postgres",
+    "db:down": "docker compose down"
+  },
+  "devDependencies": {
+    "typescript": "5.9.3",
+    "vitest": "5.0.1",
+    "@types/node": "22.20.3",
+    "tsx": "4.23.13"
+  }
+}

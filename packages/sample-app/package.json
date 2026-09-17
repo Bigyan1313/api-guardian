@@ -1,0 +1,14 @@
+{
+  "name": "@api-guardian/sample-app",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "description": "A TypeScript consumer of the Contacts API. The code API Guardian is meant to repair.",
+  "scripts": {
+    "typecheck": "tsc -p tsconfig.json",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "axios": "1.20.0"
+  }
+}

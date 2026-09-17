@@ -1,0 +1,13 @@
+node_modules/
+dist/
+coverage/
+*.tsbuildinfo
+
+.env
+.env.local
+
+# Local Postgres data directory (see db/README.md)
+.pgdata/
+
+.DS_Store
+*.log
