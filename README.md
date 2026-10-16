@@ -113,6 +113,20 @@ staged.
 | `packages/sample-app/` | The TypeScript consumer API Guardian repairs, plus the v1 spec. |
 | `BUILD_LOG.md` | What has been built, week by week, and why. |
 
+## Team docs
+
+Three of us build this, each with an AI assistant, so the shared state lives in
+the repo. **Start with [AGENTS.md](AGENTS.md).**
+
+| File | What it's for |
+| --- | --- |
+| [AGENTS.md](AGENTS.md) | Entry point for people and AIs: rules, repo map, end-of-session checklist |
+| [docs/STATUS.md](docs/STATUS.md) | Where we are right now: who's on what, blockers, open decisions |
+| [docs/ROADMAP.md](docs/ROADMAP.md) | Every week as a task checklist, plus the recovery schedule |
+| [docs/BUILD_PLAN.md](docs/BUILD_PLAN.md) | The original build plan; code cites its section numbers |
+| [docs/sessions/](docs/sessions/) | One short note per work session |
+| [docs/PRESENTATION.md](docs/PRESENTATION.md) | Outline for the 2026-10-20 progress presentation |
+
 ## Where we are
 
 Week 1 of 12 is done: repo, Postgres, CI, and a sample TypeScript app with
