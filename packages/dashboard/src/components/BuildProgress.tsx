@@ -1,21 +1,22 @@
 /**
  * Where the twelve-week build actually is. Honest by construction: the weeks are
- * hard-coded from the build plan and only week 1 is marked done, so the page
- * cannot quietly imply more of the pipeline exists than does.
+ * hard-coded from the SRS milestone table (section 7.2) and only week 1 is
+ * marked done, so the page cannot quietly imply more of the pipeline exists
+ * than does.
  */
 
 const WEEKS: { weeks: string; name: string; done: boolean }[] = [
   { weeks: '1', name: 'Setup: repo, Postgres, CI, sample app', done: true },
-  { weeks: '2', name: 'Demo API at v1 and v2', done: false },
+  { weeks: '2', name: 'Demonstration API at v1 and v2', done: false },
   { weeks: '3', name: 'Detection: oasdiff + classifier', done: false },
-  { weeks: '4', name: 'Code locator: ts-morph', done: false },
+  { weeks: '4', name: 'Call-site location: ts-morph', done: false },
   { weeks: '5', name: 'Validator: tsc + Vitest in Docker', done: false },
   { weeks: '6–7', name: 'Repair agent', done: false },
-  { weeks: '8', name: 'PR writer', done: false },
-  { weeks: '9', name: '25 frozen scenarios', done: false },
-  { weeks: '10', name: 'Evaluation: five baselines', done: false },
-  { weeks: '11', name: 'Dashboard', done: false },
-  { weeks: '12', name: 'Write-up and demo', done: false },
+  { weeks: '8', name: 'Pull-request delivery', done: false },
+  { weeks: '9', name: '20 frozen scenarios', done: false },
+  { weeks: '10', name: 'Evaluation: three baselines', done: false },
+  { weeks: '11', name: 'Dashboard and human review', done: false },
+  { weeks: '12', name: 'Report and demo', done: false },
 ];
 
 export function BuildProgress() {

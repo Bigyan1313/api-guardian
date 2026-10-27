@@ -64,7 +64,7 @@ describe.skipIf(url === undefined)('read API', () => {
       specVersions: 2,
       changes: 7,
       breaking: 5,
-      runs: 6,
+      runs: 7,
     });
   });
 
@@ -85,10 +85,15 @@ describe.skipIf(url === undefined)('read API', () => {
 
   it('never reports a repair for a change we refused to patch', async () => {
     const runs = await get('/api/runs');
-    const refused = runs.find((run: { outcome: string | null }) => run.outcome === null);
+    const refused = runs.filter((run: { outcome: string | null }) => run.outcome === null);
 
-    expect(refused?.status).toBe('needs_human');
-    expect(refused?.attempts).toBe(0);
+    // Two refusals are seeded: a rename nothing confirms, and an endpoint
+    // removal with no documented replacement. Neither may show an attempt.
+    expect(refused.length).toBe(2);
+    for (const run of refused) {
+      expect(run.status).toBe('needs_human');
+      expect(run.attempts).toBe(0);
+    }
   });
 
   it('groups changes by type for the chart, totals matching the overview', async () => {

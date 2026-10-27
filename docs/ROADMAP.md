@@ -129,7 +129,7 @@ The five v2 changes, already fixed by the build log and the seed data:
 | 2 | `field_type_changed` | `lifetime_value`: number → decimal string (`"8420.50"`) | `formatUsd`, `rankByValue`, `totalLifetimeValue` |
 | 3 | `endpoint_removed` | `GET /v1/contacts/{id}/activity` removed, nothing replaces it | `axios-client.ts` `getActivity` |
 | 4 | `required_parameter_added` | `GET /v1/contacts` requires a `workspace_id` query parameter | every `listContacts` / `getV1Contacts` |
-| 5 | `response_shape_changed` | list returns `{ data: Contact[], next_cursor: string \| null }` instead of a bare array | every list caller |
+| ~~5~~ | ~~`response_shape_changed`~~ | **Deferred** by the SRS (section 7.4) and removed from the `change_type` enum by migration `002`. Re-adding it is a new migration, not an edit. See decision D10. | — |
 
 **Proposed sixth change, for demo step 7 (the refusal):** `email` → `contact_email`
 with **no** migration note. The seed data already has this row. Without it in
@@ -248,11 +248,11 @@ and spend the effort on the classifier and the rename rule.
 
 ## W9 — Test set · Owner: Shared (all three) · Target: Sun Nov 22
 
-**Done means:** all 25 scenarios built and frozen.
+**Done means:** all 20 scenarios built and frozen. *(SRS section 6.2: five per change type across four types. Was 25 across five types; see decision D10.)*
 
 - [ ] Scenario layout, e.g. `packages/eval/scenarios/<change-type>-<n>/` containing `repo/` (frozen sample), `old.json`, `new.json`, the migration note, and `labels.json` (expected classification, expected locations, whether it *should* be patched or refused)
 - [ ] **Admission script:** a scenario is accepted only if its tests pass on old and fail on new (§9, §12). Run it in CI.
-- [ ] Five per change type × five types = 25, plus a few "must refuse" cases (unconfirmed renames)
+- [ ] Five per change type × four types = 20. Of the five endpoint removals, two carry a documented replacement and three do not: the three without one **must be refused**, and a confident patch for them fails the scenario even if its tests pass (SRS section 6.2)
 - [ ] Vary them: call pattern (`fetch` / `axios` / generated), how far the field travels from the HTTP call, and one change per scenario versus several
 - [ ] Split authoring: about 8–9 each. Each scenario is reviewed by someone who didn't write it.
 - [ ] Freeze: tag the commit, and from then on scenarios change only through a recorded entry in BUILD_LOG.md
@@ -261,13 +261,13 @@ and spend the effort on the classifier and the rename rule.
 
 ## W10 — Evaluation · Owner: Shared (Member 1 leads reporting) · Target: Sun Nov 29
 
-**Done means:** all five baselines run, numbers in a table.
+**Done means:** all three baselines run, numbers in a table. *(SRS section 6.3; was five baselines and two models — see decision D10.)*
 
 - [ ] `npm run eval`: one repeatable command, not a one-off demo (§9)
 - [ ] The schema needs to know which baseline produced a run (open decision D6), e.g. a new migration adding a `runs.baseline` column
-- [ ] Baselines: (1) do nothing, (2) version bump only, (3) a hand-written ts-morph codemod per change type, (4) one model call with no tests or retries, (5) the full agent
-- [ ] Full agent × **two models** (Claude and Gemini) over the same 25
-- [ ] Numbers: detection precision/recall (on the hand labels, including Stripe/GitHub/Twilio), repair rate overall and **by change type**, attempts (mean and spread), cheats caught, **false confidence** (PRs that a human review found wrong), and cost and time per repair
+- [ ] Baselines (SRS section 6.3): **B1** do nothing, **B2** one model call with no validation, retries or guards, **B3** the full pipeline. The gap between B2 and B3 is what this project's engineering actually contributes, which is why those two are the ones that cannot be cut
+- [ ] One configured model for the measured study; a second model over the same 20 is a stretch goal (SRS section 7.4), attempted only once B1–B3 are reported
+- [ ] Numbers: detection precision/recall (on the hand labels, including Stripe/GitHub/Twilio), repair rate overall and **by change type**, refusal correctness on the scenarios with no documented mapping, attempts (mean and spread), cheats caught, **false confidence** (PRs that a human review found wrong), and cost and time per repair
 - [ ] A human reviews every patch the agent produced. Record who reviewed it and the verdict.
 - [ ] Results go out as Markdown tables for the report and as SQL queries for the dashboard. The dashboard computes nothing (see AGENTS.md).
 

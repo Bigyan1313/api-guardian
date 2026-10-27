@@ -13,7 +13,7 @@ The full checklist is in [../AGENTS.md](../AGENTS.md#end-of-session-checklist).
 
 ---
 
-**Last updated:** 2026-10-16 by Bigyan (with Claude), when these docs were written
+**Last updated:** 2026-10-27 by Bigyan (with Claude), aligning the code with the submitted SRS
 
 ## In one paragraph
 
@@ -55,8 +55,8 @@ Bigyan is one of the three; assign the roles on Tuesday.
 | Check | Result |
 | --- | --- |
 | `npm run typecheck` | clean, all workspaces |
-| `npm test` with no database running | 20 passed, 19 skipped (DB and API tests skip themselves without `DATABASE_URL`) |
-| `npm test` with Postgres | 39 passed, per BUILD_LOG.md on 2026-09-17; not re-run today |
+| `npm test` with no database running | 20 passed, 20 skipped, re-run 2026-10-27 (DB and API tests skip themselves without `DATABASE_URL`) |
+| `npm test` with Postgres | 40 passed, re-run 2026-10-27 |
 | CI on GitHub | **Never confirmed.** See blocker B1. |
 | `docker compose up` | **Never run.** Docker is not installed on Bigyan's Mac. |
 
@@ -85,6 +85,7 @@ Record each answer here with the date, then move it into
 | D7 | Add the unconfirmed `email` → `contact_email` rename to v2 so the refusal demo is real? | Yes | Wed Oct 21 (W2) | |
 | D8 | Which GitHub repo the PR writer opens PRs against | A team demo repo with a copy of the sample app | W8 | |
 | D9 | Git workflow: PR per task, one reviewer, squash-merge to `main` | Yes | Tue Oct 20 | |
+| D10 | **Which document is authoritative: the build plan PDF or the submitted SRS v1.0?** The code now follows the SRS (4 change types, 20 scenarios, 3 baselines, 1 model); these docs still describe the plan (5, 25, 5, 2) | The SRS — it is what was submitted on Sep 24 | Next meeting | |
 
 ## Uncommitted local changes
 

@@ -18,8 +18,8 @@ export function ChangesByType({ rows }: { rows: TypeCount[] }) {
       <div className="card-head">
         <h2>Detected changes by type</h2>
         <p className="card-sub">
-          The five change types in scope for v1. Repair rate per type is the table that matters in
-          week 10 — this is its detection half.
+          The four change types in scope for this release. Repair rate per type is the table that
+          matters in week 10 — this is its detection half.
         </p>
       </div>
 

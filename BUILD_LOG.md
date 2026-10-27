@@ -15,8 +15,63 @@ is the record of what actually happened against it.
 | 8 | PR writer | Not started |
 | 9 | Test set | Not started |
 | 10 | Evaluation | Not started |
-| 11 | Dashboard | **Brought forward to week 1** |
+| 11 | Dashboard | **Brought forward to week 1**; realigned to the SRS 2026-10-27 |
 | 12 | Write-up and demo | Not started |
+
+---
+
+## 2026-10-27 — Scope aligned with the submitted SRS
+
+**What changed.** The code followed the build plan PDF; the SRS submitted for the
+course on 2026-09-24 had narrowed the scope, and nobody had reconciled the two.
+The dashboard was the visible symptom — it advertised five change types, 25
+scenarios and five baselines, none of which the spec still says.
+
+- `db/migrations/002_scope_change_types_to_four.sql` drops
+  `response_shape_changed` from the `change_type` enum. Postgres cannot remove an
+  enum value in place, so the type is recreated and the column re-typed; rows in
+  that category are deleted first, and at the time of writing the only such rows
+  came from `npm run db:seed`.
+- The seed now covers four categories, and models the endpoint-removal case the
+  way SRS section 6.2 requires: one removal **with** a documented replacement
+  (repair attempted, hits the four-attempt cap, flagged) and one **without**
+  (located, affected, and refused). The refusal is the result worth showing.
+- `BuildProgress.tsx` mirrors the SRS milestone table: 20 scenarios, three
+  baselines, and the section 7.2 wording for weeks 2, 4, 8, 11 and 12.
+- `ChangesByType.tsx` says four change types rather than five.
+- ROADMAP W2/W9/W10, README, and the plan-change log record the narrowing.
+
+**Decisions worth recording.**
+
+*Deferred is not forbidden, but it is enforced.* The SRS moves response-shape
+migrations to section 7.4 rather than ruling them out forever. The enum still
+rejects them, because a scope boundary that lives only in prose is one nobody
+notices crossing. Putting the category back is a new migration — which is a
+thirty-second job and a visible decision, exactly the trade we want.
+
+*The refusal case got stronger, not weaker.* Cutting a change type could have
+left one flagged row. Instead the seed now has two refusals for two different
+reasons: a rename no note confirms, and a removal with nothing to migrate to.
+A new test asserts both, so a future seed cannot quietly drop them.
+
+**Verified, not assumed.**
+
+| Check | Result |
+| --- | --- |
+| `npm run db:reset` (001 + 002 from scratch) | both applied |
+| `npm run typecheck` | clean, all four workspaces |
+| `npm test` with Postgres | 40 passed |
+| `npm test` with no database | 20 passed, 20 skipped |
+| `npm run db:seed` | 7 changes, 7 runs, 6 patches |
+| Dashboard rendered in Chromium | four bars, two refusals, SRS milestones |
+
+**Known gaps.**
+
+- **The team has not agreed to this.** AGENTS.md and BUILD_PLAN.md sections 1–14
+  still describe the plan's numbers, and they are deliberately left alone. The
+  question is open decision **D10** in STATUS.md.
+- Docker still unverified here (blocker B2), so the W5 validator path remains
+  untested.
 
 ---
 

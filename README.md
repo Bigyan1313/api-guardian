@@ -59,12 +59,13 @@ working end-to-end system **plus real numbers on where it succeeds and fails**.
 ## Scope for v1
 
 **In:** TypeScript only; three documented call patterns (`fetch`, `axios`, a
-generated client); one demo API we control, at two versions; five change types
-(removed endpoint, renamed field, field type changed, new required parameter,
-response shape changed); repair only where a migration note gives the mapping.
+generated client); one demo API we control, at two versions; four change types
+(removed endpoint, renamed field, field type changed, new required parameter);
+repair only where a migration note gives the mapping.
 
 **Out:** other languages, GraphQL and gRPC, guessing field mappings without a
-migration note, auto-merging anything.
+migration note, auto-merging anything, and response-shape migrations (deferred;
+the `change_type` enum rejects them until a migration adds the category back).
 
 ## Getting started
 

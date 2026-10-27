@@ -91,8 +91,8 @@ export async function seed(db: Queryable): Promise<void> {
         method: 'get',
         pointer: null,
         confidence: 1.0,
-        confirmedBy: null,
-        summary: 'Activity endpoint removed with no documented replacement',
+        confirmedBy: 'migration_note',
+        summary: 'Activity endpoint replaced by /v1/contacts/{id}/events',
       },
       {
         type: 'required_parameter_added',
@@ -105,14 +105,17 @@ export async function seed(db: Queryable): Promise<void> {
         summary: 'workspace_id is now a required query parameter',
       },
       {
-        type: 'response_shape_changed',
+        // An endpoint removed with nothing documented to replace it. There is
+        // affected code, but no migration to propose, so the correct behaviour
+        // is to report it and stop (SRS section 6.2; BR-05).
+        type: 'endpoint_removed',
         classification: 'breaking',
-        path: '/v1/contacts',
+        path: '/v1/contacts/{id}/notes',
         method: 'get',
-        pointer: '/responses/200',
-        confidence: 0.87,
+        pointer: null,
+        confidence: 1.0,
         confirmedBy: null,
-        summary: 'Bare array replaced by a paged envelope: { data, next_cursor }',
+        summary: 'Notes endpoint removed with no documented replacement',
       },
       {
         // The one we deliberately refuse to patch. email disappeared and
@@ -163,7 +166,7 @@ export async function seed(db: Queryable): Promise<void> {
       changeIds.push(inserted.rows[0]!.id);
     }
 
-    const [renamed, retyped, removed, requiredParam, reshaped, unconfirmed] = changeIds;
+    const [renamed, retyped, removed, requiredParam, removedNoReplacement, unconfirmed] = changeIds;
 
     // A run per change that we acted on. The shapes here are the ones section 9
     // measures: attempts needed, cost, model, and how it ended.
@@ -241,15 +244,17 @@ export async function seed(db: Queryable): Promise<void> {
       ],
     );
 
-    // Ran out of attempts. Honest failure, flagged for a human.
-    const runReshaped = await runOf(reshaped!, 'repair', 'needs_human', 4, 0.0721, 'claude-opus-5', 38);
+    // Ran out of attempts. Honest failure, flagged for a human. The endpoint
+    // removal has a documented replacement, so repair is attempted — but the
+    // call sites need more than a URL swap and four attempts is the cap.
+    const runExhausted = await runOf(removed!, 'repair', 'needs_human', 4, 0.0721, 'claude-opus-5', 38);
     await db.query(
       `INSERT INTO patches (run_id, attempt, diff, test_output, tests_passed, tests_total, outcome)
        VALUES ($1, 4, $2, $3, 11, 18, 'failed')`,
       [
-        runReshaped,
-        "--- a/src/clients/fetch-client.ts\n+++ b/src/clients/fetch-client.ts\n@@\n-    return (await response.json()) as Contact[];\n+    return ((await response.json()) as { data: Contact[] }).data;",
-        'Tests  11 passed | 7 failed (18)\n  paging not handled at 3 of 5 call sites',
+        runExhausted,
+        "--- a/src/clients/axios-client.ts\n+++ b/src/clients/axios-client.ts\n@@\n-    const { data } = await this.http.get<ActivityEntry[]>(`/v1/contacts/${contactId}/activity`);\n+    const { data } = await this.http.get<ActivityEntry[]>(`/v1/contacts/${contactId}/events`);",
+        'Tests  11 passed | 7 failed (18)\n  the replacement endpoint returns a different entry shape',
       ],
     );
 
@@ -260,12 +265,23 @@ export async function seed(db: Queryable): Promise<void> {
       'No migration note confirms email -> contact_email. Flagged for a human; not patched.',
     ]);
 
-    // Nothing in the repo calls the removed endpoint, so there is nothing to fix.
-    const runRemoved = await runOf(removed!, 'locate', 'succeeded', 0, 0, null, 24);
+    // Located, affected, and still refused: the endpoint is gone and nothing is
+    // documented to call instead. Inventing a replacement is the failure mode
+    // this project exists to avoid, so the run stops after locating the code.
+    const runNoReplacement = await runOf(removedNoReplacement!, 'locate', 'needs_human', 0, 0, null, 18);
+    await db.query(`UPDATE runs SET error = $2 WHERE id = $1`, [
+      runNoReplacement,
+      'GET /v1/contacts/{id}/notes was removed with no documented replacement. '
+        + 'Affected code found; no migration proposed.',
+    ]);
+
+    // Nothing in the repo calls the safely-widened field, so there is nothing to
+    // fix. A 'not affected' result is a real outcome, not a failure to find one.
+    const runSafe = await runOf(changeIds[changeIds.length - 1]!, 'locate', 'succeeded', 0, 0, null, 24);
     await db.query(
       `INSERT INTO patches (run_id, attempt, diff, outcome)
        VALUES ($1, 1, '', 'not_affected')`,
-      [runRemoved],
+      [runSafe],
     );
 
     await db.query('COMMIT');
@@ -280,7 +296,7 @@ async function main(): Promise<void> {
   await client.connect();
   try {
     await seed(client);
-    console.log('seeded: 1 repo, 1 API, 2 spec versions, 7 changes, 6 runs, 6 patches');
+    console.log('seeded: 1 repo, 1 API, 2 spec versions, 7 changes, 7 runs, 6 patches');
   } finally {
     await client.end();
   }

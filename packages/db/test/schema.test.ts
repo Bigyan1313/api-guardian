@@ -74,14 +74,22 @@ describe.skipIf(url === undefined)('schema', () => {
     ]);
   });
 
-  it('knows the five change types in scope for v1', async () => {
+  it('knows the four change types in scope for this release', async () => {
     expect(await enumValues('change_type')).toEqual([
       'endpoint_removed',
       'field_renamed',
       'field_type_changed',
       'required_parameter_added',
-      'response_shape_changed',
     ]);
+  });
+
+  it('rejects a change category the release puts out of scope', async () => {
+    // Response-shape migrations are deferred (SRS section 7.4). The schema is
+    // what stops one being recorded in the meantime, so the deferral survives
+    // somebody forgetting about it.
+    await expect(
+      client.query(`SELECT 'response_shape_changed'::change_type`),
+    ).rejects.toThrow(/invalid input value/);
   });
 
   it('treats an unclassifiable change as its own answer', async () => {
