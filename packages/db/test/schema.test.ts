@@ -62,12 +62,13 @@ describe.skipIf(url === undefined)('schema', () => {
     }
   }
 
-  it('creates the six tables from the build plan', async () => {
+  it('creates the six tables from the build plan, plus what later stages added', async () => {
     expect(await tableNames()).toEqual([
       'apis',
       'changes',
       'patches',
       'repos',
+      'run_locations', // added by 003, for the locator's results
       'runs',
       'schema_migrations',
       'spec_versions',

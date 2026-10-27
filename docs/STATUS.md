@@ -13,18 +13,19 @@ The full checklist is in [../AGENTS.md](../AGENTS.md#end-of-session-checklist).
 
 ---
 
-**Last updated:** 2026-10-27 by Bigyan (with Claude), after W2, `main`, and the W3 detector
+**Last updated:** 2026-10-27 by Bigyan (with Claude), after W2, `main`, W3 detector and W4 locator
 
 ## In one paragraph
 
-Plan weeks 1, 2 and the core of 3 are done: monorepo, Postgres schema, CI
+Plan weeks 1, 2, the core of 3, and 4 are done: monorepo, Postgres schema, CI
 workflow (now green on `main`), the demo API at both versions with a migration
 note, a sample TypeScript app whose 23 tests pass against v1 and 11 of which fail
-against v2, a dashboard on seed data, and a detector that runs oasdiff, maps its
-findings to our four categories, and refuses to confirm a rename the migration
-note does not state. **The locator, validator, agent and PR writer do not exist
-yet**, and the server still has no write endpoints, so the dashboard still shows
-seed data rather than detector output. On the calendar we are into week 7 of 12. A
+against v2, a dashboard on seed data, a detector that runs oasdiff and refuses to
+confirm a rename the migration note does not state, and a locator that walks from
+a changed spec field to every read of it two layers above the HTTP call.
+**The validator, agent and PR writer do not exist yet**, nothing yet joins
+detection to location, and the server still has no write endpoints, so the
+dashboard still shows seed data. On the calendar we are into week 7 of 12. A
 recovery schedule that runs weeks 2–5 in parallel is proposed in
 [ROADMAP.md](ROADMAP.md#proposed-recovery-schedule-team-to-agree-tue-oct-20), and
 the team decides on it at the Tuesday meeting.
@@ -35,7 +36,7 @@ the team decides on it at the Tuesday meeting.
 | --- | --- |
 | Tue 2026-10-20 | Progress presentation (outline: [PRESENTATION.md](PRESENTATION.md)) |
 | ~~Wed 2026-10-21~~ | ~~W2 demo API v2~~ — **done 2026-10-27**; W3 and W4 are unblocked |
-| Sun 2026-11-01 | **Checkpoint:** ~~W3 detection~~ (core done 2026-10-27), W4 locator, W5 validator done |
+| Sun 2026-11-01 | **Checkpoint:** ~~W3 detection~~, ~~W4 locator~~ (both 2026-10-27), W5 validator done |
 | Sun 2026-11-08 | Rename case repaired end to end |
 | Sun 2026-11-22 | 25 scenarios frozen |
 | Sun 2026-11-29 | Evaluation numbers in a table |
@@ -61,7 +62,7 @@ Bigyan is one of the three; assign the roles on Tuesday.
 | `npm run typecheck` | clean, all workspaces |
 | `npm test` with no database running | 25 passed, 20 skipped, re-run 2026-10-27 (DB and API tests skip themselves without `DATABASE_URL`) |
 | `npm run check:v2-breaks` | passes: 11 of 23 sample-app tests fail against v2, as required |
-| `npm test` with Postgres and oasdiff | 61 passed, re-run 2026-10-27 |
+| `npm test` with Postgres and oasdiff | 73 passed, re-run 2026-10-27 |
 | CI on GitHub | **Green.** First run ever succeeded on `main` 2026-10-27 (run #1). |
 | `docker compose up` | **Never run.** Docker is not installed on Bigyan's Mac. |
 
@@ -83,7 +84,7 @@ Record each answer here with the date, then move it into
 | --- | --- | --- | --- | --- |
 | D1 | Adopt the recovery schedule and cut triggers? | Yes | Tue Oct 20 | |
 | D2 | Migration-note format | Prose note + small JSON (`renames: [{schema, from, to}]`) | Wed Oct 21 (W2) | **2026-10-27: adopted as proposed.** `contacts-v2.migration.md` + `.json`; the JSON also carries type changes, added required parameters, replaced and removed endpoints |
-| D3 | Where the locator stores call sites | New migration `002`: a `run_locations` table | W4 | |
+| D3 | Where the locator stores call sites | New migration `002`: a `run_locations` table | W4 | **2026-10-27: adopted**, as migration `003` (002 was taken by the scope change), plus a `runs.coverage` column |
 | D4 | Agent: plain SDK calls or eve | Plain SDKs behind `model.ts` | W6 | |
 | D5 | Patch format from the model | Full file contents of the located files; we compute the diff | W6 | |
 | D6 | How eval runs record their baseline | New migration adding `runs.baseline` | W10 | |

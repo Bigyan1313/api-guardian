@@ -9,7 +9,7 @@ is the record of what actually happened against it.
 | 1 | Setup | **Done** |
 | 2 | Demo API | **Done** |
 | 3 | Detection | **Done** (core; see gaps) |
-| 4 | Code locator | Not started |
+| 4 | Code locator | **Done** |
 | 5 | Validator | Not started |
 | 6–7 | Repair agent | Not started |
 | 8 | PR writer | Not started |
@@ -17,6 +17,80 @@ is the record of what actually happened against it.
 | 10 | Evaluation | Not started |
 | 11 | Dashboard | **Brought forward to week 1**; realigned to the SRS 2026-10-27 |
 | 12 | Write-up and demo | Not started |
+
+---
+
+## Week 4 — Code locator
+
+**Done means:** ts-morph finds the exact call sites for every change type.
+
+**Result:** all four categories, with exact file and line assertions in the
+tests. 12 locator tests pass.
+
+### What landed
+
+`packages/locator`: `project.ts` (load the repository, decide what to read),
+`endpoints.ts` (the three call patterns), `fields.ts` (find-references on the
+property symbol), `locate.ts` (one behaviour per category), `store.ts`.
+`npm run locate` runs every demo change against the sample app.
+
+Migration `003_run_locations.sql` settles decision **D3**: a `run_locations`
+table rather than JSONB on `runs`, because the dashboard lists and counts these
+rows, the agent reads them file by file, and week 9 compares them against
+hand-written expectations. All three want rows. Coverage, which belongs to the
+run rather than to any one location, is a new `runs.coverage` column.
+
+### Decisions worth recording
+
+**ts-morph 27, not 28.** ts-morph bundles its own TypeScript, and 28 bundles
+6.0.2 while this repository pins 5.9. AGENTS.md says TypeScript stays on 5.9
+*because* ts-morph is tied to it, so the locator parsing with a different
+compiler than the validator type-checks with would quietly undermine that.
+ts-morph 27 bundles 5.9.2, which matches. Verified rather than assumed.
+
+**The locator must not point the agent at test files.** Find-references
+correctly reports `test/clients.test.ts` and `test/support/fake-api.ts` as
+readers of `customer_name` — they are. But the validator's cheat guards reject
+any patch that edits a test, and the fixture in `test/support/` is the thing
+serving the old contract: editing it to match v2 would erase the breakage the
+evaluation measures. Handing either to the agent is a guaranteed wasted attempt.
+They are recorded in coverage as skipped, with the reason, rather than dropped.
+The exclusion has to be applied twice, because find-references searches the
+whole program regardless of which files were loaded for scanning.
+
+**"Not affected" is computed from coverage, not from the count.** An empty
+result only means not affected when every call site could be read. A URL built
+at run time (`base + route`) is unreadable, so the honest answer becomes "needs
+review". There is a fixture for exactly this, and a test that the locator
+refuses to call it not-affected.
+
+**A field change locates the type and the reads, not just the call.**
+`customer_name` resolves to `src/types.ts:12`, the three clients, and four reads
+in `src/reporting.ts` — two layers above the HTTP call. That walk is the whole
+reason the locator uses the type checker rather than a text search.
+
+### Verified, not assumed
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | clean, all six workspaces |
+| `npm test` with Postgres and oasdiff | 73 passed (14 db + 16 detector + 12 locator + 23 sample-app + 8 server) |
+| `npm run locate` | all four categories resolve to `src/` only |
+| ts-morph bundled TypeScript | 5.9.2, against the project's 5.9.3 |
+| `npm run db:reset` | 001, 002 and 003 applied |
+| `npm audit` | 0 vulnerabilities |
+
+### Known gaps
+
+- **Nothing joins detection to location yet.** Both run from their own CLI; no
+  code reads a `changes` row, locates it, and writes a `runs` row with its
+  locations. That join is small and belongs with the server write endpoints
+  still owed from week 3.
+- The locator has only met the sample app. Wrappers, re-exported aliases and
+  deeply indirect clients are reported as coverage limits by design, but none
+  have been tried on a real third-party codebase.
+- `required_parameter_added` returns call sites only. Whether the caller *has* a
+  workspace id to pass is a question for the agent, not the locator.
 
 ---
 

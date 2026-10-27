@@ -24,7 +24,8 @@
     "db:down": "docker compose down",
     "test:v2": "npm run test:v2 --workspace @api-guardian/sample-app",
     "check:v2-breaks": "node scripts/check-v2-breaks.mjs",
-    "detect": "npm run detect --workspace @api-guardian/detector --"
+    "detect": "npm run detect --workspace @api-guardian/detector --",
+    "locate": "npm run locate --workspace @api-guardian/locator --"
   },
   "devDependencies": {
     "typescript": "5.9.3",

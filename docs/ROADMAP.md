@@ -175,21 +175,21 @@ and spend the effort on the classifier and the rename rule.
 
 ---
 
-## W4 — Code locator · Owner: Member 3 · Target: Sun Nov 1
+## W4 — Code locator ✅ Done 2026-10-27
 
 **Done means:** ts-morph finds the exact call sites for all five change types.
 
-- [ ] New package `packages/locator` using `ts-morph` (pin the version; it is tied to the TypeScript version, which is why TS stays on 5.9)
-- [ ] Input: one `changes` row (type, path, method, pointer). Output: a list of `{ file, line, column, kind, snippet }`, where kind is e.g. `call_site`, `field_read`, `type_decl`
-- [ ] Endpoint-level matching for all three call patterns:
-  - [ ] `fetch`: a template literal URL `` `${base}/v1/contacts/${id}` `` matches the OpenAPI path `/v1/contacts/{id}`
-  - [ ] `axios`: an instance from `axios.create`, then `.get('/v1/…')`
-  - [ ] generated client: function name = `operationId` (`getV1Contacts`, `getV1ContactsById`)
-- [ ] Field-level matching: resolve the TS type that mirrors the schema (`Contact` in `types.ts`), then use the type checker's *find references* on the property symbol. This walks from the spec field to `reporting.ts`, two layers up from the HTTP call. Text search is not enough and does not count.
-- [ ] One behaviour per change type (removed endpoint → call sites of that path; rename/type change → every read of the property; required param → call sites of that operation; shape change → call sites plus everything that treats the result as an array)
-- [ ] **Decide where located sites are stored** (open decision D3). The schema has no column for them. Suggestion: a new migration `002_locations.sql` (a `run_locations` table, or a JSONB column on `runs`). Never edit `001`.
-- [ ] Tests: for each of the five changes, assert the **exact** set of file:line results on the sample app (the W2 table says what to expect). No false negatives on the sample app.
-- [ ] Empty result → the run ends as `not_affected` (§7)
+- [x] New package `packages/locator` using **ts-morph 27.0.0**, which bundles TypeScript 5.9.2 and so matches the repo's pin (28 bundles 6.0.x). Verified, not assumed. Originally: (pin the version; it is tied to the TypeScript version, which is why TS stays on 5.9)
+- [x] Input: one `changes` row (type, path, method, pointer). Output: a list of `{ file, line, column, kind, snippet }`, where kind is e.g. `call_site`, `field_read`, `type_decl`
+- [x] Endpoint-level matching for all three call patterns:
+  - [x] `fetch`: a template literal URL `` `${base}/v1/contacts/${id}` `` matches the OpenAPI path `/v1/contacts/{id}`
+  - [x] `axios`: an instance from `axios.create`, then `.get('/v1/…')`
+  - [x] generated client: function name = `operationId` (`getV1Contacts`, `getV1ContactsById`)
+- [x] Field-level matching: resolve the TS type that mirrors the schema (`Contact` in `types.ts`), then use the type checker's *find references* on the property symbol. This walks from the spec field to `reporting.ts`, two layers up from the HTTP call. Text search is not enough and does not count.
+- [x] One behaviour per change type (removed endpoint → call sites of that path; rename/type change → every read of the property; required param → call sites of that operation; shape change → call sites plus everything that treats the result as an array)
+- [x] **Decided (D3):** migration `003_run_locations.sql` — a `run_locations` table plus a `runs.coverage` column. Originally: The schema has no column for them. Suggestion: a new migration `002_locations.sql` (a `run_locations` table, or a JSONB column on `runs`). Never edit `001`.
+- [x] Tests: for each change, assert the **exact** set of file:line results on the sample app (the W2 table says what to expect). No false negatives on the sample app.
+- [x] Empty result → `not_affected`, **but only when coverage was complete**; an unreadable URL makes it needs-review instead
 
 ---
 
