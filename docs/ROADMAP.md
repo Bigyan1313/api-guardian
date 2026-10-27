@@ -117,7 +117,7 @@ W11 dashboard: built in W1 over seed data; switches to real rows as W3–W8 writ
 
 ---
 
-## W2 — Demo API · Owner: Member 2 · Target: Wed Oct 21
+## W2 — Demo API ✅ Done 2026-10-27
 
 **Done means:** old and new versions running, tests that break on the new one.
 
@@ -127,7 +127,8 @@ The five v2 changes, already fixed by the build log and the seed data:
 | --- | --- | --- | --- |
 | 1 | `field_renamed` | `customer_name` → `full_name` (a migration note **confirms** it) | `reporting.ts`, all three clients |
 | 2 | `field_type_changed` | `lifetime_value`: number → decimal string (`"8420.50"`) | `formatUsd`, `rankByValue`, `totalLifetimeValue` |
-| 3 | `endpoint_removed` | `GET /v1/contacts/{id}/activity` removed, nothing replaces it | `axios-client.ts` `getActivity` |
+| 3 | `endpoint_removed` | `GET /v1/contacts/{id}/activity` removed, **`/events` documented as its replacement** (`kind` → `type`) | `axios-client.ts` `getActivity` |
+| 3b | `endpoint_removed` | `GET /v1/contacts/{id}/notes` withdrawn, **no replacement** — must be refused, not patched | `axios-client.ts` `getNotes` |
 | 4 | `required_parameter_added` | `GET /v1/contacts` requires a `workspace_id` query parameter | every `listContacts` / `getV1Contacts` |
 | ~~5~~ | ~~`response_shape_changed`~~ | **Deferred** by the SRS (section 7.4) and removed from the `change_type` enum by migration `002`. Re-adding it is a new migration, not an edit. See decision D10. | — |
 
@@ -137,13 +138,13 @@ the real v2, the "we refused to patch" moment in the demo would be fake.
 
 Tasks:
 
-- [ ] `packages/sample-app/openapi/contacts-v2.json`: copy of v1 with the changes above; `info.version: "2.0.0"`
-- [ ] **Decide the migration-note format** (open decision D2 in STATUS.md). Suggestion: a prose note like a real provider's changelog, *plus* a small machine-readable file such as `contacts-v2.migration.json` (`{ "renames": [{ "schema": "Contact", "from": "customer_name", "to": "full_name" }] }`). The detector needs the structured part to set `mapping_confirmed_by = 'migration_note'`; the agent reads the prose.
-- [ ] `startFakeApiV2()` in `test/support/fake-api.ts`: serves v2 for real. It returns 400 without `workspace_id`, uses the envelope and `full_name`, returns `lifetime_value` as a string, and 404s the activity route.
-- [ ] A way to run the same tests against v2, e.g. `CONTACTS_API_VERSION=v2` read by the fixture, plus a script `npm run test:v2 -w @api-guardian/sample-app`
-- [ ] A check that **v2 must fail**: a script (and a CI step) that runs `test:v2` and fails the build if it passes. That gives the §9 "fail before the fix" rule a test of its own.
-- [ ] Write down which test fails for which change (a table in BUILD_LOG.md). W4 and W9 both use it.
-- [ ] Do **not** edit `src/types.ts`. It mirrors v1 by hand on purpose; that drift is the bug we exist to fix.
+- [x] `packages/sample-app/openapi/contacts-v2.json`: copy of v1 with the changes above; `info.version: "2.0.0"`
+- [x] **Decided (D2):** prose + structured, as proposed. **Format** (open decision D2 in STATUS.md). Suggestion: a prose note like a real provider's changelog, *plus* a small machine-readable file such as `contacts-v2.migration.json` (`{ "renames": [{ "schema": "Contact", "from": "customer_name", "to": "full_name" }] }`). The detector needs the structured part to set `mapping_confirmed_by = 'migration_note'`; the agent reads the prose.
+- [x] `startFakeApi(version)` in `test/support/fake-api.ts`: serves v2 for real. It returns 400 without `workspace_id`, uses the envelope and `full_name`, returns `lifetime_value` as a string, and 404s the activity route.
+- [x] A way to run the same tests against v2, e.g. `CONTACTS_API_VERSION=v2` read by the fixture, plus a script `npm run test:v2 -w @api-guardian/sample-app`
+- [x] A check that **v2 must fail**: a script (and a CI step) that runs `test:v2` and fails the build if it passes. That gives the §9 "fail before the fix" rule a test of its own.
+- [x] Written down: which test fails for which change (a table in BUILD_LOG.md). W4 and W9 both use it.
+- [x] Did **not** edit `src/types.ts`. It mirrors v1 by hand on purpose; that drift is the bug we exist to fix.
 
 **Traps:** `tsc` still passes at v2, because the types are hand-written. The
 failure shows up at runtime in tests, which is the realistic case, so don't

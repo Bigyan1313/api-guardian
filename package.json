@@ -21,7 +21,9 @@
     "db:reset": "npm run reset --workspace @api-guardian/db",
     "db:seed": "npm run seed --workspace @api-guardian/server",
     "db:up": "docker compose up -d postgres",
-    "db:down": "docker compose down"
+    "db:down": "docker compose down",
+    "test:v2": "npm run test:v2 --workspace @api-guardian/sample-app",
+    "check:v2-breaks": "node scripts/check-v2-breaks.mjs"
   },
   "devDependencies": {
     "typescript": "5.9.3",

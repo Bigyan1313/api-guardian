@@ -3,13 +3,13 @@ import { afterAll, beforeAll, describe, expect, it } from 'vitest';
 import { ContactsAxiosClient } from '../src/clients/axios-client.ts';
 import { ContactsFetchClient } from '../src/clients/fetch-client.ts';
 import { getV1Contacts, getV1ContactsById } from '../src/clients/generated-client.ts';
-import { startFakeApiV1, type FakeApi } from './support/fake-api.ts';
+import { startFakeApi, type FakeApi } from './support/fake-api.ts';
 
 describe('the three supported call patterns', () => {
   let api: FakeApi;
 
   beforeAll(async () => {
-    api = await startFakeApiV1();
+    api = await startFakeApi();
   });
 
   afterAll(async () => {
@@ -50,6 +50,13 @@ describe('the three supported call patterns', () => {
 
       expect(activity).toHaveLength(2);
       expect(activity[1]?.kind).toBe('purchase');
+    });
+
+    it('reads a contact\u2019s notes', async () => {
+      const notes = await new ContactsAxiosClient(api.url).getNotes('ct_001');
+
+      expect(notes).toHaveLength(1);
+      expect(notes[0]?.body).toContain('annual billing');
     });
   });
 

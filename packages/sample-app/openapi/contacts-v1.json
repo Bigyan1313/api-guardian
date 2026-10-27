@@ -5,7 +5,11 @@
     "version": "1.0.0",
     "description": "The demo API the sample app consumes. Week 2 publishes v2 of this spec with the five in-scope breaking changes; this file is the baseline it is diffed against."
   },
-  "servers": [{ "url": "https://contacts.example.test" }],
+  "servers": [
+    {
+      "url": "https://contacts.example.test"
+    }
+  ],
   "paths": {
     "/v1/contacts": {
       "get": {
@@ -16,7 +20,12 @@
             "description": "Every contact, as a bare array.",
             "content": {
               "application/json": {
-                "schema": { "type": "array", "items": { "$ref": "#/components/schemas/Contact" } }
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Contact"
+                  }
+                }
               }
             }
           }
@@ -28,19 +37,34 @@
         "operationId": "getV1ContactsById",
         "summary": "Fetch one contact",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
             "description": "The contact.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Contact" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
             }
           },
           "404": {
             "description": "No contact with that id.",
             "content": {
-              "application/json": { "schema": { "$ref": "#/components/schemas/Error" } }
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
             }
           }
         }
@@ -51,7 +75,14 @@
         "operationId": "getV1ContactsByIdActivity",
         "summary": "A contact's activity feed",
         "parameters": [
-          { "name": "id", "in": "path", "required": true, "schema": { "type": "string" } }
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
         ],
         "responses": {
           "200": {
@@ -60,7 +91,40 @@
               "application/json": {
                 "schema": {
                   "type": "array",
-                  "items": { "$ref": "#/components/schemas/ActivityEntry" }
+                  "items": {
+                    "$ref": "#/components/schemas/ActivityEntry"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/contacts/{id}/notes": {
+      "get": {
+        "operationId": "getV1ContactsByIdNotes",
+        "summary": "Free-text notes attached to a contact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Notes, oldest first.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Note"
+                  }
                 }
               }
             }
@@ -73,29 +137,96 @@
     "schemas": {
       "Contact": {
         "type": "object",
-        "required": ["id", "customer_name", "email", "lifetime_value", "created_at"],
+        "required": [
+          "id",
+          "customer_name",
+          "email",
+          "lifetime_value",
+          "created_at"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "customer_name": { "type": "string" },
-          "email": { "type": "string", "format": "email" },
-          "lifetime_value": { "type": "number" },
-          "created_at": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string"
+          },
+          "customer_name": {
+            "type": "string"
+          },
+          "email": {
+            "type": "string",
+            "format": "email"
+          },
+          "lifetime_value": {
+            "type": "number"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "ActivityEntry": {
         "type": "object",
-        "required": ["id", "contact_id", "kind", "occurred_at"],
+        "required": [
+          "id",
+          "contact_id",
+          "kind",
+          "occurred_at"
+        ],
         "properties": {
-          "id": { "type": "string" },
-          "contact_id": { "type": "string" },
-          "kind": { "type": "string", "enum": ["login", "purchase", "support_ticket"] },
-          "occurred_at": { "type": "string", "format": "date-time" }
+          "id": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "kind": {
+            "type": "string",
+            "enum": [
+              "login",
+              "purchase",
+              "support_ticket"
+            ]
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          }
         }
       },
       "Error": {
         "type": "object",
-        "required": ["error"],
-        "properties": { "error": { "type": "string" } }
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "Note": {
+        "type": "object",
+        "required": [
+          "id",
+          "contact_id",
+          "body",
+          "written_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "body": {
+            "type": "string"
+          },
+          "written_at": {
+            "type": "string",
+            "format": "date-time"
+          }
+        }
       }
     }
   }

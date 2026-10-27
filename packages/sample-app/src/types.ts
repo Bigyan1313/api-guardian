@@ -22,3 +22,10 @@ export interface ActivityEntry {
   readonly kind: 'login' | 'purchase' | 'support_ticket';
   readonly occurred_at: string;
 }
+
+export interface Note {
+  readonly id: string;
+  readonly contact_id: string;
+  readonly body: string;
+  readonly written_at: string;
+}

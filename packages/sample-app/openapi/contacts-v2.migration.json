@@ -1,0 +1,32 @@
+{
+  "$comment": "The machine-readable half of the migration note (decision D2). The detector reads this to decide whether a change's mapping is confirmed; the agent reads the prose in contacts-v2.migration.md. A change absent from this file is unconfirmed, and an unconfirmed mapping is flagged, never patched.",
+  "api": "Contacts API",
+  "from_version": "1.0.0",
+  "to_version": "2.0.0",
+  "note": "contacts-v2.migration.md",
+  "renames": [
+    { "schema": "Contact", "from": "customer_name", "to": "full_name" },
+    { "schema": "Event", "from": "kind", "to": "type" }
+  ],
+  "type_changes": [
+    {
+      "schema": "Contact",
+      "field": "lifetime_value",
+      "from": "number",
+      "to": "string",
+      "format": "decimal string with two places, e.g. \"8420.50\""
+    }
+  ],
+  "required_parameters_added": [
+    { "path": "/v1/contacts", "method": "get", "parameter": "workspace_id", "in": "query" }
+  ],
+  "endpoints_replaced": [
+    {
+      "from": { "path": "/v1/contacts/{id}/activity", "method": "get" },
+      "to": { "path": "/v1/contacts/{id}/events", "method": "get" }
+    }
+  ],
+  "endpoints_removed": [
+    { "path": "/v1/contacts/{id}/notes", "method": "get", "replacement": null }
+  ]
+}

@@ -58,6 +58,13 @@ jobs:
       - name: Test
         run: npm test
 
+      # The evaluation only admits a scenario whose tests fail before the fix
+      # (SRS section 6.2). If the sample app ever passes against v2, that rule
+      # has been broken and every repair rate measured afterwards is worthless,
+      # so the build fails here rather than later and quietly.
+      - name: The sample app must break against v2
+        run: npm run check:v2-breaks
+
       # The schema tests skip themselves when DATABASE_URL is unset. That is
       # right on a laptop and wrong in CI, so fail the build if the database
       # went missing rather than reporting a green run that tested nothing.

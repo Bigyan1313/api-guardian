@@ -7,7 +7,7 @@ is the record of what actually happened against it.
 | Week | Goal | Status |
 | --- | --- | --- |
 | 1 | Setup | **Done** |
-| 2 | Demo API | Not started |
+| 2 | Demo API | **Done** |
 | 3 | Detection | Not started |
 | 4 | Code locator | Not started |
 | 5 | Validator | Not started |
@@ -17,6 +17,85 @@ is the record of what actually happened against it.
 | 10 | Evaluation | Not started |
 | 11 | Dashboard | **Brought forward to week 1**; realigned to the SRS 2026-10-27 |
 | 12 | Write-up and demo | Not started |
+
+---
+
+## Week 2 — Demo API
+
+**Done means:** old and new versions running, tests that break on the new one.
+
+**Result:** both. 23 tests pass against v1 and 11 of them fail against v2, and
+CI fails the build if that ever stops being true.
+
+### What landed
+
+`packages/sample-app/openapi/contacts-v2.json`, plus the migration note in the
+two-part format decision D2 proposed: `contacts-v2.migration.md` reads like a
+provider changelog for the agent, and `contacts-v2.migration.json` carries the
+structured mappings the detector needs to set `mapping_confirmed_by`.
+
+The fixture now serves either version. `startFakeApi()` reads
+`CONTACTS_API_VERSION`, so the same suite runs against both — v1 by default,
+`npm run test:v2` against the new contract.
+
+v1 gained `GET /v1/contacts/{id}/notes` and the sample app gained a caller for
+it, so that v2 can withdraw an endpoint with **nothing** to replace it. The
+activity endpoint is the other kind: removed, but with `/events` documented as
+its replacement. One is repairable and the other must be refused, which is the
+distinction SRS section 6.2 asks the scenario set to make.
+
+### Which test fails for which change
+
+Week 4's locator has to walk from each spec change to this code, and week 9
+reuses the mapping when building scenarios.
+
+| Change | Category | Tests that fail against v2 |
+| --- | --- | --- |
+| `customer_name` → `full_name` | `field_renamed`, confirmed | `end-to-end`: ranks contacts, builds initials; `clients`: fetch/generated fetch one contact |
+| `lifetime_value` number → decimal string | `field_type_changed`, confirmed | `end-to-end`: formats currency, totals lifetime values, ranks contacts |
+| `workspace_id` now required | `required_parameter_added`, confirmed | `clients`: lists contacts in all three call patterns; every `end-to-end` test |
+| `/activity` → `/events` | `endpoint_removed`, replacement documented | `clients`: reads a contact activity feed |
+| `/notes` withdrawn | `endpoint_removed`, no replacement | `clients`: reads a contact's notes |
+| `email` → `contact_email` | `field_renamed`, **undocumented** | No test fails. Nothing reads the field yet — which is the point: it has to be found by classification, not by a red test |
+
+### Decisions worth recording
+
+**The reporting layer had to be reachable from the API, and wasn't.** The
+existing tests stopped at the client, and the reporting tests fed the functions a
+fixed v1 array, so both stayed green through a rename that ruins every rendered
+row. `end-to-end.test.ts` fetches over HTTP and renders the result, so a field
+renamed in the spec now fails two layers above the HTTP call. Without it, week 4
+would have had no failing test to aim the locator at.
+
+**A build that passes against v2 is a broken build.** `npm run check:v2-breaks`
+runs the suite against v2 and inverts the exit code: it fails if the app
+*survives*. CI runs it on every push. The admission rule in SRS section 6.2 is
+the foundation the repair rate stands on, and the usual way to violate it is for
+somebody to helpfully "fix" `src/types.ts`.
+
+**`src/types.ts` still describes v1, deliberately.** `tsc` is clean against v2
+because the types are hand-written and nothing regenerates them. That drift is
+the bug the project exists to repair, and the failure surfacing at runtime
+instead of compile time is the realistic case.
+
+### Verified, not assumed
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | clean, all four workspaces |
+| `npm test` (v1) with Postgres | 45 passed |
+| `npm run test:v2` | 11 failed, 12 passed — the required outcome |
+| `npm run check:v2-breaks` | passes, reporting 11 failures |
+| `npm run db:reset` + `db:seed` | 001 and 002 applied; 7 changes, 7 runs, 6 patches |
+| Both specs and the migration JSON | parse; `email` absent from the documented renames |
+
+### Known gaps
+
+- `email` → `contact_email` breaks no test, because nothing in the sample app
+  reads the field. It is still the refusal case: week 3 has to flag it from the
+  spec diff alone. Worth a caller later so the refusal has visible consequences.
+- Docker remains unverified here (blocker B2), so the week 5 validator path is
+  still untested.
 
 ---
 

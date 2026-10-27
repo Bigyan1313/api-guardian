@@ -1,0 +1,201 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Contacts API",
+    "version": "2.0.0",
+    "description": "Version 2 of the demo API. Every difference from v1 is one of the change categories the release supports, plus one rename that is deliberately left undocumented so the system has something it must refuse to patch. See contacts-v2.migration.md."
+  },
+  "servers": [
+    {
+      "url": "https://contacts.example.test"
+    }
+  ],
+  "paths": {
+    "/v1/contacts": {
+      "get": {
+        "operationId": "getV1Contacts",
+        "summary": "List contacts",
+        "responses": {
+          "200": {
+            "description": "Every contact, as a bare array.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Contact"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "workspace_id is missing.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "name": "workspace_id",
+            "in": "query",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "description": "Required from v2. Requests without it are rejected with 400."
+          }
+        ]
+      }
+    },
+    "/v1/contacts/{id}": {
+      "get": {
+        "operationId": "getV1ContactsById",
+        "summary": "Fetch one contact",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "The contact.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Contact"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "No contact with that id.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Error"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/v1/contacts/{id}/events": {
+      "get": {
+        "operationId": "getV1ContactsByIdEvents",
+        "summary": "A contact's event feed (replaces /activity)",
+        "parameters": [
+          {
+            "name": "id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Events, newest last.",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Event"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "Contact": {
+        "type": "object",
+        "required": [
+          "id",
+          "full_name",
+          "contact_email",
+          "lifetime_value",
+          "created_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "lifetime_value": {
+            "type": "string",
+            "description": "Decimal string, e.g. \"8420.50\". Was a number at v1.",
+            "pattern": "^-?\\d+\\.\\d{2}$"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "full_name": {
+            "type": "string"
+          },
+          "contact_email": {
+            "type": "string",
+            "format": "email"
+          }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "required": [
+          "error"
+        ],
+        "properties": {
+          "error": {
+            "type": "string"
+          }
+        }
+      },
+      "Event": {
+        "type": "object",
+        "required": [
+          "id",
+          "contact_id",
+          "type",
+          "occurred_at"
+        ],
+        "properties": {
+          "id": {
+            "type": "string"
+          },
+          "contact_id": {
+            "type": "string"
+          },
+          "occurred_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "type": {
+            "type": "string",
+            "enum": [
+              "login",
+              "purchase",
+              "support_ticket"
+            ]
+          }
+        }
+      }
+    }
+  }
+}
