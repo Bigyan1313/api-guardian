@@ -13,16 +13,18 @@ The full checklist is in [../AGENTS.md](../AGENTS.md#end-of-session-checklist).
 
 ---
 
-**Last updated:** 2026-10-27 by Bigyan (with Claude), after W2 and creating `main`
+**Last updated:** 2026-10-27 by Bigyan (with Claude), after W2, `main`, and the W3 detector
 
 ## In one paragraph
 
-Plan weeks 1 and 2 are done: monorepo, Postgres schema, CI workflow, the demo
-API at both versions with a migration note, a sample TypeScript app whose 23
-tests pass against v1 and 11 of which fail against v2, and a dashboard running on
-seed data. **No part of the pipeline exists yet** (detection, locator, validator,
-agent, PR writer). On the calendar we are into week 7 of 12, so about five plan
-weeks behind. A
+Plan weeks 1, 2 and the core of 3 are done: monorepo, Postgres schema, CI
+workflow (now green on `main`), the demo API at both versions with a migration
+note, a sample TypeScript app whose 23 tests pass against v1 and 11 of which fail
+against v2, a dashboard on seed data, and a detector that runs oasdiff, maps its
+findings to our four categories, and refuses to confirm a rename the migration
+note does not state. **The locator, validator, agent and PR writer do not exist
+yet**, and the server still has no write endpoints, so the dashboard still shows
+seed data rather than detector output. On the calendar we are into week 7 of 12. A
 recovery schedule that runs weeks 2–5 in parallel is proposed in
 [ROADMAP.md](ROADMAP.md#proposed-recovery-schedule-team-to-agree-tue-oct-20), and
 the team decides on it at the Tuesday meeting.
@@ -33,7 +35,7 @@ the team decides on it at the Tuesday meeting.
 | --- | --- |
 | Tue 2026-10-20 | Progress presentation (outline: [PRESENTATION.md](PRESENTATION.md)) |
 | ~~Wed 2026-10-21~~ | ~~W2 demo API v2~~ — **done 2026-10-27**; W3 and W4 are unblocked |
-| Sun 2026-11-01 | **Checkpoint:** W3 detection, W4 locator, W5 validator done |
+| Sun 2026-11-01 | **Checkpoint:** ~~W3 detection~~ (core done 2026-10-27), W4 locator, W5 validator done |
 | Sun 2026-11-08 | Rename case repaired end to end |
 | Sun 2026-11-22 | 25 scenarios frozen |
 | Sun 2026-11-29 | Evaluation numbers in a table |
@@ -59,8 +61,8 @@ Bigyan is one of the three; assign the roles on Tuesday.
 | `npm run typecheck` | clean, all workspaces |
 | `npm test` with no database running | 25 passed, 20 skipped, re-run 2026-10-27 (DB and API tests skip themselves without `DATABASE_URL`) |
 | `npm run check:v2-breaks` | passes: 11 of 23 sample-app tests fail against v2, as required |
-| `npm test` with Postgres | 45 passed, re-run 2026-10-27 |
-| CI on GitHub | **Never confirmed.** See blocker B1. |
+| `npm test` with Postgres and oasdiff | 61 passed, re-run 2026-10-27 |
+| CI on GitHub | **Green.** First run ever succeeded on `main` 2026-10-27 (run #1). |
 | `docker compose up` | **Never run.** Docker is not installed on Bigyan's Mac. |
 
 ## Blockers and risks right now
@@ -68,7 +70,7 @@ Bigyan is one of the three; assign the roles on Tuesday.
 | # | Blocker | Effect | Next step | Owner |
 | --- | --- | --- | --- | --- |
 | B1 | ~~No `main` branch~~ **Partly cleared 2026-10-27:** `main` created from the work branch and pushed. | CI has a branch to trigger on | **Remaining:** set `main` as the default branch in GitHub Settings → Branches, then confirm the first run went green | *TBD* |
-| B2 | Docker isn't installed (at least on Bigyan's Mac) | `npm run db:up` and the whole W5 validator depend on it | Everyone installs Docker Desktop, OrbStack or colima, then runs `npm run db:up` | everyone |
+| B2 | Docker isn't installed (at least on Bigyan's Mac) | `npm run db:up` and the whole W5 validator depend on it. **Now the critical path:** W5 cannot start, and nothing after W5 is trustworthy without a working validator | Everyone installs Docker Desktop, OrbStack or colima, then runs `npm run db:up` | everyone |
 | B3 | Four plan weeks behind | Pushes against the evaluation, which can never be cut | Agree on the recovery schedule Tuesday | team |
 | B4 | The final deadline and week-1 start date are assumed, not confirmed | Every date here could be off | Confirm against the course schedule | *TBD* |
 

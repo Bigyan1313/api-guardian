@@ -8,7 +8,7 @@ is the record of what actually happened against it.
 | --- | --- | --- |
 | 1 | Setup | **Done** |
 | 2 | Demo API | **Done** |
-| 3 | Detection | Not started |
+| 3 | Detection | **Done** (core; see gaps) |
 | 4 | Code locator | Not started |
 | 5 | Validator | Not started |
 | 6–7 | Repair agent | Not started |
@@ -17,6 +17,86 @@ is the record of what actually happened against it.
 | 10 | Evaluation | Not started |
 | 11 | Dashboard | **Brought forward to week 1**; realigned to the SRS 2026-10-27 |
 | 12 | Write-up and demo | Not started |
+
+---
+
+## Week 3 — Detection
+
+**Done means:** oasdiff wired in, changes classified, stored in the database.
+
+**Result:** all three. Running the demo API's v1 against v2 produces 19 oasdiff
+findings, 9 classified changes across all four supported categories, and 8
+findings accounted for as out of scope. 16 detector tests pass.
+
+### What landed
+
+`packages/detector`, in five small files:
+
+- `oasdiff.ts` runs the pinned binary (v1.34.1) and parses its JSON. Thin on
+  purpose: detection is the part oasdiff already does well (plan §12, risk 1).
+- `classify.ts` maps oasdiff rule identifiers onto the four categories, with a
+  confidence per rule.
+- `renames.ts` is the rule the project rests on, below.
+- `migration-note.ts` reads the structured half of the note. It is the only
+  thing that may turn a guess into a confirmed mapping.
+- `spec-store.ts` canonicalises, hashes and stores a spec version.
+
+`npm run detect` runs the whole thing and prints the classification; with
+`DATABASE_URL` set it also writes the rows.
+
+### Decisions worth recording
+
+**oasdiff does not report renames, and we do not infer them.** It reports a
+property removed and a property added. Whether those are the same field under a
+new name is not something a diff can know. `renames.ts` pairs them *only* where
+the migration note says so. Everything left over is stored as `field_renamed`
+with classification `unknown`, `mapping_confirmed_by` NULL, confidence 0.42, and
+the unexplained additions recorded under `detail.candidates` — candidates, never
+a mapping. A test asserts that an unconfirmed rename has no `detail.to`, because
+that field is what a confirmed one carries and the repair stage will read it.
+
+With the note, `customer_name` → `full_name` is confirmed and `email` →
+`contact_email` is flagged. With the note removed, *both* are flagged. That
+second case is a test: no authority, no confirmation.
+
+**An unknown oasdiff rule is reported, not assumed safe.** `classify.ts` keeps an
+explicit list of rules judged harmless. Anything not in either list comes back as
+unmapped with a reason. Treating "not in the breaking list" as safe is how a
+breaking change gets missed after an oasdiff upgrade.
+
+**Endpoint removals are split by whether the note names a replacement.**
+`/activity` has one, so it is confirmed and repairable; `/notes` does not, so it
+is flagged. oasdiff reports both identically — the difference comes from the
+note alone.
+
+**Canonicalise before hashing.** A provider that reorders its JSON keys has not
+changed its API. Without canonical key order a scheduled check would record a new
+version every morning and bury the real changes.
+
+### Verified, not assumed
+
+| Check | Result |
+| --- | --- |
+| `npm run typecheck` | clean, all five workspaces |
+| `npm test` with Postgres and oasdiff | 61 passed (14 db + 16 detector + 23 sample-app + 8 server) |
+| `npm run detect` on v1 → v2 | 19 findings, 9 classified, 8 unmapped |
+| `npm run check:v2-breaks` | passes, 11 failures |
+| `npm audit` | 0 vulnerabilities |
+
+### Known gaps
+
+- **No server write endpoints yet.** `POST /api/apis/:id/specs` and
+  `POST /api/apis/:id/check` are still to do, so the dashboard's "check for
+  changes" button has nothing to call and the dashboard still shows seed data.
+- **Scheduled checking is not built.** It is cut #2 in the cut order, so it was
+  left for last deliberately.
+- **No real spec histories yet** (Stripe, GitHub, Twilio), which W10's detection
+  precision and recall need. The classifier has only met our own demo API, and
+  rules it has never seen come back unmapped rather than classified.
+- **ESLint still not added**, deferred again.
+- oasdiff reports the same logical change once per path, so one rename produces
+  two rows. That is deliberate — the locator works per path — but any count of
+  "changes" is a count of path-level changes, not of distinct field edits.
 
 ---
 

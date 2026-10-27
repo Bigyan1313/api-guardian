@@ -152,23 +152,23 @@ failure shows up at runtime in tests, which is the realistic case, so don't
 
 ---
 
-## W3 — Detection · Owner: Member 2 · Target: Sun Nov 1
+## W3 — Detection ✅ Core done 2026-10-27 · remaining items below
 
 **Done means:** oasdiff wired in, changes classified, stored in the database.
 
-- [ ] Install oasdiff and **pin the version**. It's a Go binary: use Homebrew or the `tufin/oasdiff` Docker image locally, and add an install step to CI.
-- [ ] New package `packages/detector`:
-  - [ ] `watcher.ts`: get a spec from a URL or file upload. Convert YAML to JSON, canonicalise the JSON, sha256 it, then `INSERT … ON CONFLICT (api_id, content_hash) DO NOTHING` into `spec_versions` (`source` = `fetch` / `upload` / `fixture`)
-  - [ ] `diff.ts`: run oasdiff with JSON output between two `spec_versions` and parse the result
-  - [ ] `classify.ts`: map oasdiff's findings to our five `change_type`s and to `breaking` / `safe` / `unknown` with a `confidence`, keeping oasdiff's own text verbatim in `changes.detail` (and `detail.summary` for the dashboard). Check the exact rule IDs against the pinned oasdiff version (it can list its checks) rather than trusting memory.
-  - [ ] `renames.ts`: oasdiff reports a rename as "property removed" plus "property added". Pair them as a *candidate* rename. Set `mapping_confirmed_by = 'migration_note'` **only** when the migration note says so; otherwise leave it NULL, and the change gets flagged.
-- [ ] Server write endpoints, a deliberate change from the read-only W1 server:
+- [x] Installed and pinned at **v1.34.1** (`go install github.com/oasdiff/oasdiff@v1.34.1`), with a CI step. It's a Go binary: use Homebrew or the `tufin/oasdiff` Docker image locally, and add an install step to CI.
+- [x] New package `packages/detector`:
+  - [x] `spec-store.ts` (named `spec-store`, not `watcher`, since fetching is not built yet): get a spec from a URL or file upload. Convert YAML to JSON, canonicalise the JSON, sha256 it, then `INSERT … ON CONFLICT (api_id, content_hash) DO NOTHING` into `spec_versions` (`source` = `fetch` / `upload` / `fixture`)
+  - [x] `oasdiff.ts`: run oasdiff with JSON output between two `spec_versions` and parse the result
+  - [x] `classify.ts`: map oasdiff's findings to our five `change_type`s and to `breaking` / `safe` / `unknown` with a `confidence`, keeping oasdiff's own text verbatim in `changes.detail` (and `detail.summary` for the dashboard). Check the exact rule IDs against the pinned oasdiff version (it can list its checks) rather than trusting memory.
+  - [x] `renames.ts`: oasdiff reports a rename as "property removed" plus "property added". Pair them as a *candidate* rename. Set `mapping_confirmed_by = 'migration_note'` **only** when the migration note says so; otherwise leave it NULL, and the change gets flagged.
+- [ ] **Still to do.** Server write endpoints, a deliberate change from the read-only W1 server:
   `POST /api/apis/:id/specs` (upload) and `POST /api/apis/:id/check` (the "check
   for changes" button in demo step 4)
 - [ ] Scheduled checking from `apis.check_schedule` (cron). **This is cut #2 in the cut order**, so build it last.
-- [ ] Real spec histories for **detection only** (§3): two or three historical versions each of Stripe, GitHub and Twilio. Their OpenAPI specs are public on GitHub. Store them as fixtures or fetch them with a script. Hand-label the breaking changes for W10's precision/recall.
-- [ ] ESLint (deferred from W1 to here in the build log)
-- [ ] Test: running detection v1 → v2 produces exactly the expected `changes` rows, with the right type, classification and `mapping_confirmed_by`; the unconfirmed `email` rename has NULL
+- [ ] **Still to do, and needed for W10's precision/recall.** Real spec histories for **detection only** (§3): two or three historical versions each of Stripe, GitHub and Twilio. Their OpenAPI specs are public on GitHub. Store them as fixtures or fetch them with a script. Hand-label the breaking changes for W10's precision/recall.
+- [ ] **Still to do.** ESLint (deferred from W1, and again from W3)
+- [x] Test: running detection v1 → v2 produces exactly the expected `changes` rows, with the right type, classification and `mapping_confirmed_by`; the unconfirmed `email` rename has NULL
 
 **Traps:** detection is the part oasdiff already does (§12 risk 1). Keep it thin
 and spend the effort on the classifier and the rename rule.

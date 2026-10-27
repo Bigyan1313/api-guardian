@@ -8,7 +8,7 @@
 const WEEKS: { weeks: string; name: string; done: boolean }[] = [
   { weeks: '1', name: 'Setup: repo, Postgres, CI, sample app', done: true },
   { weeks: '2', name: 'Demonstration API at v1 and v2', done: true },
-  { weeks: '3', name: 'Detection: oasdiff + classifier', done: false },
+  { weeks: '3', name: 'Detection: oasdiff + classifier', done: true },
   { weeks: '4', name: 'Call-site location: ts-morph', done: false },
   { weeks: '5', name: 'Validator: tsc + Vitest in Docker', done: false },
   { weeks: '6–7', name: 'Repair agent', done: false },

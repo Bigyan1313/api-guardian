@@ -1,0 +1,11 @@
+export { changelog, isInstalled, OASDIFF_VERSION, OasdiffError } from './oasdiff.ts';
+export type { Finding } from './oasdiff.ts';
+export { classify, isUnmapped, propertyNameOf } from './classify.ts';
+export type { Change, Classification, ChangeType, Unmapped } from './classify.ts';
+export { resolveRenames } from './renames.ts';
+export { loadMigrationNote, confirmsRename, EMPTY_NOTE } from './migration-note.ts';
+export type { MigrationNote, Rename } from './migration-note.ts';
+export { canonicalise, hashSpec, readSpec, storeSpecVersion } from './spec-store.ts';
+export type { SpecSource, StoredSpec } from './spec-store.ts';
+export { detectChanges, storeChanges } from './detect.ts';
+export type { DetectionResult } from './detect.ts';

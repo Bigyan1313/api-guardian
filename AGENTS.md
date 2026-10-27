@@ -77,7 +77,7 @@ Breaking one of these breaks the project's method, not only its code.
 | `packages/server/` | Express API over Postgres (`queries.ts`), seed script | W1, W3 |
 | `packages/dashboard/` | React + Vite dashboard | W11, built in W1 |
 | `packages/sample-app/` | The TypeScript consumer we repair; v1 spec in `openapi/` | W1, W2 |
-| `packages/detector/` | *to create:* spec watcher, oasdiff, classifier | W3 |
+| `packages/detector/` | oasdiff wrapper, classifier, rename rule, spec store | W3 |
 | `packages/locator/` | *to create:* ts-morph call-site finder | W4 |
 | `packages/validator/` | *to create:* Docker runner, result parser, cheat guards | W5 |
 | `packages/agent/` | *to create:* `model.ts`, context builder, repair loop | W6–7 |

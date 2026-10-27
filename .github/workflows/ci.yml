@@ -41,7 +41,22 @@ jobs:
           node-version-file: .nvmrc
           cache: npm
 
+      - uses: actions/setup-go@v5
+        with:
+          go-version: '1.25'
+
       - run: npm ci
+
+      # The detector shells out to oasdiff and maps its rule identifiers by
+      # name, so the version is pinned. Without it the detector tests skip
+      # themselves, which would be a green build that tested nothing.
+      - name: Install oasdiff
+        run: |
+          go install github.com/oasdiff/oasdiff@v1.34.1
+          echo "$(go env GOPATH)/bin" >> "$GITHUB_PATH"
+
+      - name: oasdiff is on PATH
+        run: oasdiff --version
 
       - name: Typecheck
         run: npm run typecheck
